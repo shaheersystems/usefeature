@@ -14,10 +14,85 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String?
   password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[]
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  owner       User      @relation(fields: [userId], references: [id])
+  userId      String
+  features    Feature[]
+
+  @@index([userId])
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  version     String   @default("0.0.1")
+  enabled     Boolean  @default(false)
+  labels      Label[]
+  changes     Change[]
+  metadata    Json?
+
+  // what can be in metadata?
+  // - feature flags
+  // - feature toggles
+  // - feature switches
+  // - feature variants
+  // - feature experiments
+  // - feature tests
+  // - feature metrics
+  // - feature analytics
+  // - feature insights
+  // - feature feedback
+  // - feature comments
+  // - feature notes
+  // - feature tasks
+  // - feature todos
+  // - feature bugs
+  // - feature issues
+  // - feature stories
+  @@index([projectId])
+}
+
+// feedbacks on the feature -> next iteration
+
+model Change {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  feature     Feature  @relation(fields: [featureId], references: [id])
+  featureId   String
+  type        String
+  description String
+}
+
+model Label {
+  id        String   @id @default(cuid())
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Feature   Feature? @relation(fields: [featureId], references: [id])
+  featureId String?
+}
+
+enum Status {
+  ENABLED
+  DISABLED
 }
